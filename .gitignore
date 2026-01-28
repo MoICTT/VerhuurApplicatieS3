@@ -1,0 +1,11 @@
+# Backend build artifacts
+Backend/bin/
+Backend/obj/
+
+# Frontend dependencies
+Frontend/node_modules/
+Frontend/dist/
+
+# Environment secrets
+.env
+.env.local
