@@ -1,0 +1,6 @@
+@VerhuurApplicatieAPI_HostAddress = http://localhost:5150
+
+GET {{VerhuurApplicatieAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
