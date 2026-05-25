@@ -1,0 +1,39 @@
+name: verhuurapplicatie-dev
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: verhuurapplicatie-dev-db
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${SA_PASSWORD}", "-Q", "SELECT 1", "-No"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./Backend/
+    container_name: verhuurapplicatie-dev-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5150
+      ConnectionStrings__Default: "Server=db;Database=VerhuurApplicatieS3;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+    ports:
+      - "5150:5150"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./Frontend/
+      target: dev
+    container_name: verhuurapplicatie-dev-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
