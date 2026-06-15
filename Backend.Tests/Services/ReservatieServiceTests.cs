@@ -1,4 +1,5 @@
 using Moq;
+using Xunit;
 using VerhuurApplicatieAPI.DTOs;
 using VerhuurApplicatieAPI.Models;
 using VerhuurApplicatieAPI.Repositories;

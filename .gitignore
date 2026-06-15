@@ -1,6 +1,8 @@
 # Backend build artifacts
 Backend/bin/
 Backend/obj/
+Backend.Tests/bin/
+Backend.Tests/obj/
 
 # Frontend dependencies
 Frontend/node_modules/
