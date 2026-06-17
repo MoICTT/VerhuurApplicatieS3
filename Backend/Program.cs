@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using VerhuurApplicatieAPI.Data;
 using VerhuurApplicatieAPI.Repositories;
 using VerhuurApplicatieAPI.Services;
@@ -21,6 +24,23 @@ builder.Services.AddScoped<IReservatieService, ReservatieService>();
 // Controllers
 builder.Services.AddControllers();
 
+// JWT authenticatie
+var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer              = builder.Configuration["Jwt:Issuer"],
+            ValidAudience            = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        };
+    });
+
 // CORS — sta de Vue frontend toe
 builder.Services.AddCors(options =>
 {
@@ -41,6 +61,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors("VueFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

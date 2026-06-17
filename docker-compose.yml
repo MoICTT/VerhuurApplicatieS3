@@ -22,6 +22,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5150
       ConnectionStrings__Default: "Server=db;Database=VerhuurApplicatieS3;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: VerhuurApplicatieAPI
+      Jwt__Audience: VerhuurApplicatieFrontend
     ports:
       - "5150:5150"
     depends_on:
