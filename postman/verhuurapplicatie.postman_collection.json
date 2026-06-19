@@ -1,0 +1,220 @@
+{
+  "info": {
+    "name": "VerhuurApplicatie API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5150",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auto's",
+      "item": [
+        {
+          "name": "GET alle auto's",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is JSON', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Response is een array', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.be.an('array');",
+                  "  pm.expect(body.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "pm.test('Elke auto heeft verplichte velden', () => {",
+                  "  const autos = pm.response.json();",
+                  "  autos.forEach(auto => {",
+                  "    pm.expect(auto).to.have.property('id');",
+                  "    pm.expect(auto).to.have.property('merk');",
+                  "    pm.expect(auto).to.have.property('model');",
+                  "    pm.expect(auto).to.have.property('prijsPerDag');",
+                  "    pm.expect(auto).to.have.property('beschikbaar');",
+                  "  });",
+                  "});",
+                  "",
+                  "// Sla eerste auto-id op voor volgende requests",
+                  "const autos = pm.response.json();",
+                  "if (autos.length > 0) {",
+                  "  pm.collectionVariables.set('autoId', autos[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET auto op ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autos/1"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is JSON', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Auto heeft alle verwachte velden', () => {",
+                  "  const auto = pm.response.json();",
+                  "  pm.expect(auto).to.have.property('id');",
+                  "  pm.expect(auto).to.have.property('merk');",
+                  "  pm.expect(auto).to.have.property('model');",
+                  "  pm.expect(auto).to.have.property('bouwjaar');",
+                  "  pm.expect(auto).to.have.property('brandstof');",
+                  "  pm.expect(auto).to.have.property('prijsPerDag');",
+                  "  pm.expect(auto).to.have.property('beschikbaar');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET auto op niet-bestaand ID (negatief)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autos/99999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reservaties",
+      "item": [
+        {
+          "name": "POST reservatie aanmaken",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/reservaties",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autoId\": 2,\n  \"voornaam\": \"Test\",\n  \"achternaam\": \"Gebruiker\",\n  \"email\": \"test@voorbeeld.nl\",\n  \"startDatum\": \"2026-08-01T00:00:00\",\n  \"eindDatum\": \"2026-08-05T00:00:00\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is JSON', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Reservatie heeft verwachte velden', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property('id');",
+                  "  pm.expect(res).to.have.property('autoMerk');",
+                  "  pm.expect(res).to.have.property('autoModel');",
+                  "  pm.expect(res).to.have.property('totaalPrijs');",
+                  "  pm.expect(res.totaalPrijs).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST reservatie voor niet-bestaande auto (negatief)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/reservaties",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autoId\": 99999,\n  \"voornaam\": \"Test\",\n  \"achternaam\": \"Gebruiker\",\n  \"email\": \"test@voorbeeld.nl\",\n  \"startDatum\": \"2026-08-01T00:00:00\",\n  \"eindDatum\": \"2026-08-05T00:00:00\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 of 400 bij niet-bestaande auto', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authenticatie",
+      "item": [
+        {
+          "name": "POST inloggen met ongeldig wachtwoord (negatief)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bestaat.niet@voorbeeld.nl\",\n  \"wachtwoord\": \"fout\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 bij ongeldige inloggegevens', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

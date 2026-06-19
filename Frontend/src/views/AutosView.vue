@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AutoCard from '@/components/AutoCard.vue'
 import { autoService } from '@/services/api.js'
+import { useAutoHub } from '@/composables/useAutoHub.js'
 
 const autos = ref([])
 const isLoading = ref(true)
@@ -21,9 +22,16 @@ async function haalAutosOp() {
   }
 }
 
+function verwerkBeschikbaarheidUpdate(autoId, beschikbaar) {
+  const auto = autos.value.find((a) => a.id === autoId)
+  if (auto) auto.beschikbaar = beschikbaar
+}
+
 onMounted(() => {
   haalAutosOp()
 })
+
+useAutoHub(verwerkBeschikbaarheidUpdate)
 </script>
 
 <template>

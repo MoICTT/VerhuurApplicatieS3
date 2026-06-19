@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.SignalR;
 using VerhuurApplicatieAPI.DTOs;
+using VerhuurApplicatieAPI.Hubs;
 using VerhuurApplicatieAPI.Models;
 using VerhuurApplicatieAPI.Repositories;
 
@@ -7,7 +9,8 @@ namespace VerhuurApplicatieAPI.Services;
 public class ReservatieService(
     IReservatieRepository reservatieRepository,
     IAutoRepository autoRepository,
-    IKlantRepository klantRepository) : IReservatieService
+    IKlantRepository klantRepository,
+    IHubContext<AutoHub> hubContext) : IReservatieService
 {
     public async Task<ReservatieDto> MaakReservatieAsync(ReservatieAanmakenDto dto)
     {
@@ -20,7 +23,6 @@ public class ReservatieService(
         if (dto.EindDatum <= dto.StartDatum)
             throw new ArgumentException("Einddatum moet na startdatum liggen.");
 
-        // Klant opzoeken of aanmaken
         var klant = await klantRepository.GetByEmailAsync(dto.Email)
             ?? await klantRepository.AddAsync(new Klant
             {
@@ -39,7 +41,7 @@ public class ReservatieService(
 
         int aantalDagen = (int)(dto.EindDatum - dto.StartDatum).TotalDays;
 
-        return new ReservatieDto
+        var result = new ReservatieDto
         {
             Id               = reservatie.Id,
             AutoMerk         = auto.Merk,
@@ -51,5 +53,10 @@ public class ReservatieService(
             EindDatum        = dto.EindDatum,
             TotaalPrijs      = aantalDagen * auto.PrijsPerDag
         };
+
+        // Stuur een live update naar alle verbonden clients
+        await hubContext.Clients.All.SendAsync("AutoBeschikbaarheidGewijzigd", auto.Id, false);
+
+        return result;
     }
 }

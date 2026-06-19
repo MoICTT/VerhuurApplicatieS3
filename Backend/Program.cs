@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using VerhuurApplicatieAPI.Data;
+using VerhuurApplicatieAPI.Hubs;
 using VerhuurApplicatieAPI.Repositories;
 using VerhuurApplicatieAPI.Services;
 
@@ -24,6 +25,9 @@ builder.Services.AddScoped<IReservatieService, ReservatieService>();
 // Controllers
 builder.Services.AddControllers();
 
+// SignalR
+builder.Services.AddSignalR();
+
 // JWT authenticatie
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -41,13 +45,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS — sta de Vue frontend toe
+// CORS — sta de Vue frontend toe (AllowCredentials vereist voor SignalR WebSockets)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VueFrontend", policy =>
         policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .AllowCredentials());
 });
 
 var app = builder.Build();
@@ -64,6 +69,7 @@ app.UseCors("VueFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<AutoHub>("/hubs/autos");
 
 app.Run();
 

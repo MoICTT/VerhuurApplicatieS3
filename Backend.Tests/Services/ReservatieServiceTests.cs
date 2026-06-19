@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.SignalR;
 using Moq;
 using Xunit;
 using VerhuurApplicatieAPI.DTOs;
+using VerhuurApplicatieAPI.Hubs;
 using VerhuurApplicatieAPI.Models;
 using VerhuurApplicatieAPI.Repositories;
 using VerhuurApplicatieAPI.Services;
@@ -12,9 +14,16 @@ public class ReservatieServiceTests
     private readonly Mock<IReservatieRepository> _reservatieRepo = new();
     private readonly Mock<IAutoRepository> _autoRepo = new();
     private readonly Mock<IKlantRepository> _klantRepo = new();
+    private readonly Mock<IHubContext<AutoHub>> _hubContext = new();
 
-    private ReservatieService CreateService() =>
-        new(_reservatieRepo.Object, _autoRepo.Object, _klantRepo.Object);
+    private ReservatieService CreateService()
+    {
+        var mockClients = new Mock<IHubClients>();
+        var mockClientProxy = new Mock<IClientProxy>();
+        mockClients.Setup(c => c.All).Returns(mockClientProxy.Object);
+        _hubContext.Setup(h => h.Clients).Returns(mockClients.Object);
+        return new(_reservatieRepo.Object, _autoRepo.Object, _klantRepo.Object, _hubContext.Object);
+    }
 
     [Fact]
     public async Task MaakReservatieAsync_AutoNietGevonden_ThrowsKeyNotFoundException()
