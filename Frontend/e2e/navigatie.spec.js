@@ -12,7 +12,7 @@ test('homepage laadt en toont de navigatiebalk', async ({ page }) => {
 
   // Navigatielinks aanwezig
   await expect(page.getByRole('link', { name: 'Home' })).toBeVisible()
-  await expect(page.getByRole('link', { name: "Auto's" })).toBeVisible()
+  await expect(page.getByRole('link', { name: "Auto's", exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Inloggen' })).toBeVisible()
 })
 
