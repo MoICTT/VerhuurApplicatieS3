@@ -82,8 +82,15 @@ jobs:
         working-directory: Frontend
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps
         working-directory: Frontend
+
+      - name: Start preview server
+        run: nohup npx vite preview --port 5173 &
+        working-directory: Frontend
+
+      - name: Wait for server to be ready
+        run: timeout 30 bash -c 'until curl -sf http://localhost:5173 > /dev/null; do sleep 1; done'
 
       - name: Run E2E tests
         run: npm run test:e2e
